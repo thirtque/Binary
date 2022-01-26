@@ -1,43 +1,50 @@
 #pragma once
 
+#include <cstddef> // std::size_t
 #include <ios> // std::streamsize
-#include <istream> // std::basic_istream, std::basic_ostream
-#include <memory> // std::addressof
-
-//! @note Consider using streambufs instead using streams
+#include <istream> // std::basic_istream
+#include <ostream> // std::basic_ostream
 
 namespace thr::binary::detail {
-    template<typename Character, typename CharacterTraits>
-    class StreamReader {
-        private:
-            using Stream = std::basic_istream<Character, CharacterTraits>;
+    template<typename Byte, typename Char, typename CharTraits>
+    class OutputStreamAdapter {
+        public:
+            using OutputStreamType = std::basic_ostream<Char, CharTraits>;
 
         private:
-            Stream& _stream;
+            OutputStreamType& _stream;
 
         public:
-            explicit StreamReader(Stream& stream):
+            OutputStreamAdapter(OutputStreamType& stream):
                 _stream(stream) {}
 
-            void read(byte_t* p, const size_t size) {
-                _stream.read(reinterpret_cast<char*>(p), static_cast<std::streamsize>(size));
+            void write(const Byte byte) {
+                _stream.write(reinterpret_cast<const Char*>(&byte), 1);
+            }
+
+            void write(const Byte* bytes, const std::size_t size) {
+                _stream.write(reinterpret_cast<const Char*>(bytes), static_cast<std::streamsize>(size));
             }
     };
 
-    template<typename Character, typename CharacterTraits>
-    class StreamWriter {
-        private:
-            using Stream = std::basic_ostream<Character, CharacterTraits>;
+    template<typename Byte, typename Char, typename CharTraits>
+    class InputStreamAdapter {
+        public:
+            using InputStreamType = std::basic_istream<Char, CharTraits>;
 
         private:
-            Stream& _stream;
+            InputStreamType& _stream;
 
         public:
-            explicit StreamWriter(Stream& stream):
+            InputStreamAdapter(InputStreamType& stream):
                 _stream(stream) {}
 
-            void write(const byte_t* p, const size_t size) {
-                _stream.write(reinterpret_cast<const char*>(p), static_cast<std::streamsize>(size));
+            void read(Byte& byte) {
+                _stream.read(reinterpret_cast<Char*>(&byte), 1);
+            }
+
+            void read(Byte* p, const std::size_t size) {
+                _stream.read(reinterpret_cast<Char*>(p), static_cast<std::streamsize>(size));
             }
     };
-} // namespace thr::binary
+}; // namespace thr::binary::detail

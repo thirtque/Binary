@@ -1,34 +1,36 @@
 #pragma once
 
-#include <memory> // std::addressof
+#include <concepts> // std::same_as
+#include <cstddef> // std::size_t
 #include <string> // std::basic_string
 
-#include "concepts.hpp"
-#include "types.hpp"
-
 namespace thr::binary::detail {
-    template<reader_adapter Adapter>
-    class Reader {
+    template<typename InputAdapter, typename Byte>
+    concept input_adapter = requires(InputAdapter adapter, Byte& byte, Byte* bytes, const std::size_t size) {
+        { adapter.read(byte) } -> std::same_as<void>;
+        { adapter.read(bytes, size) } -> std::same_as<void>;
+    };
+
+    template<typename Byte, input_adapter<Byte> InputAdapter>
+    class BasicReader {
         private:
-            Adapter _adapter;
+            InputAdapter _adapter;
 
         public:
-            Reader(Adapter a):
-                _adapter(a) {}
+            BasicReader(InputAdapter&& adapter):
+                _adapter(std::forward<InputAdapter>(adapter)) {}
 
-            void read(byte_t& b) {
-                _adapter.read(std::addressof(b), 1);
+            template<typename Number>
+            void read(Number& number) {
+                auto bytes = reinterpret_cast<Byte*>(&number);
+                _adapter.read(bytes, sizeof(Number));
             }
 
-            template<numeric T>
-            void read(T& value) {
-                _adapter.read(reinterpret_cast<byte_t*>(std::addressof(value)), sizeof(T));
-            }
-
-            template<class Character, class CharacterTraits, class Allocator>
-            void read(std::basic_string<Character, CharacterTraits, Allocator>& string, const size_t size) {
+            template<class Char, class CharTraits, class Allocator>
+            void read(std::basic_string<Char, CharTraits, Allocator>& string, const std::size_t size) {
                 string.resize(size);
-                _adapter.read(reinterpret_cast<byte_t*>(string.data()), size * sizeof(Character));
+                auto bytes = reinterpret_cast<Byte*>(string.data());
+                _adapter.read(bytes, size * sizeof(Char));
             }
     };
-} // namespace thr::binary
+} // namespace thr::binary::detail

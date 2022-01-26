@@ -2,33 +2,48 @@ cmake_minimum_required(VERSION 3.21)
 
 set(CMAKE_CXX_STANDARD 20)
 
+option(LIBBINARY_EXAMPLES "Compile examples" ON)
+
 # Binary
 add_library(LibBinary INTERFACE)
 
 target_include_directories(LibBinary INTERFACE include)
 
 # Binary usage examples
+if (LIBBINARY_EXAMPLES)
+    # Stream
+    project(BinaryStreamExample)
 
-# Streams
-project(BinaryStreamsExample)
+    add_executable(
+            BinaryStreamExample
+            src/examples/stream.cpp
+    )
 
-add_executable(
-        BinaryStreamsExample
-        src/examples/streams.cpp
-)
+    target_compile_options(BinaryStreamExample PUBLIC -Wall -Wextra -pedantic -Werror)
 
-target_compile_options(BinaryStreamsExample PUBLIC -Wall -Wextra -pedantic -Werror)
+    target_link_libraries(BinaryStreamExample LibBinary)
 
-target_link_libraries(BinaryStreamsExample LibBinary)
+    # Iterator
+    project(BinaryIteratorExample)
 
-# Iterators
-project(BinaryIteratorsExample)
+    add_executable(
+            BinaryIteratorExample
+            src/examples/iterator.cpp
+    )
 
-add_executable(
-        BinaryIteratorsExample
-        src/examples/streams.cpp
-)
+    target_compile_options(BinaryIteratorExample PUBLIC -Wall -Wextra -pedantic -Werror)
 
-target_compile_options(BinaryIteratorsExample PUBLIC -Wall -Wextra -pedantic -Werror)
+    target_link_libraries(BinaryIteratorExample LibBinary)
 
-target_link_libraries(BinaryIteratorsExample LibBinary)
+    # Range
+    project(BinaryRangeExample)
+
+    add_executable(
+            BinaryRangeExample
+            src/examples/range.cpp
+    )
+
+    target_compile_options(BinaryRangeExample PUBLIC -Wall -Wextra -pedantic -Werror)
+
+    target_link_libraries(BinaryRangeExample LibBinary)
+endif ()
