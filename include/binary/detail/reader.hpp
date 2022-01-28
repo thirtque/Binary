@@ -4,6 +4,8 @@
 #include <cstddef> // std::size_t
 #include <string> // std::basic_string
 
+#include "common.hpp"
+
 namespace thr::binary::detail {
     template<typename InputAdapter, typename Byte>
     concept input_adapter = requires(InputAdapter adapter, Byte& byte, Byte* bytes, const std::size_t size) {
@@ -20,7 +22,7 @@ namespace thr::binary::detail {
             BasicReader(InputAdapter&& adapter):
                 _adapter(std::forward<InputAdapter>(adapter)) {}
 
-            template<typename Number>
+            template<numeric Number>
             void read(Number& number) {
                 auto bytes = reinterpret_cast<Byte*>(&number);
                 _adapter.read(bytes, sizeof(Number));

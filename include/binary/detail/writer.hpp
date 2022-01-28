@@ -5,6 +5,8 @@
 #include <cstddef> // std::size_t
 #include <string> // std::basic_string
 
+#include "common.hpp"
+
 namespace thr::binary::detail {
     template<typename OutputAdapter, typename Byte>
     concept output_adapter = requires(OutputAdapter adapter, const Byte byte, const Byte* bytes, const std::size_t size) {
@@ -21,7 +23,7 @@ namespace thr::binary::detail {
             BasicWriter(OutputAdapter&& adapter):
                 _adapter(std::forward<OutputAdapter>(adapter)) {}
 
-            template<typename Number>
+            template<numeric Number>
             void write(const Number& number) {
                 auto bytes = reinterpret_cast<const Byte*>(&number);
                 _adapter.write(bytes, sizeof(Number));
