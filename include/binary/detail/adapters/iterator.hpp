@@ -3,11 +3,11 @@
 #include <algorithm> // std::for_each_n
 #include <cassert> // assert
 #include <cstddef> // std::size_t
-#include <iterator> // std::output_iterator, std::input_iterator, std::sentinel_for, std::iterator_traits
+#include <iterator> // std::output_iterator, std::input_iterator, std::sentinel_for, std::iter_value_t
 
 namespace thr::binary::detail {
-    template<typename Value>
-    concept single_byte_size = sizeof(Value) == 1;
+    template<typename T>
+    concept single_byte = sizeof(T) == 1;
 
     template<typename Byte, std::output_iterator<Byte> Iterator>
     class OutputIteratorAdapter {
@@ -33,24 +33,28 @@ namespace thr::binary::detail {
     template<typename Byte, std::input_iterator Iterator, std::sentinel_for<Iterator> Sentinel>
     class InputIteratorAdapter {
         private:
+            using IteratorValue = typename std::iter_value_t<Iterator>;
+
+        private:
             Iterator _iterator;
             Sentinel _sentinel;
 
             std::size_t _i = 0;
 
         private:
-            template<single_byte_size Value>
-            void _readValue(Byte& byte) {
-                byte = *_iterator;
+            template<single_byte T>
+            void _read(Byte& byte) {
+                byte = static_cast<Byte>(*_iterator);
                 ++_iterator;
             }
 
-            template<typename Value>
-            requires(!single_byte_size<Value>) void _readValue(Byte& byte) {
-                auto bytes = reinterpret_cast<Byte*>(&(*_iterator));
-                byte = *(bytes + _i);
+            template<typename T>
+            requires(!single_byte<T>)
+            void _read(Byte& byte) {
+                auto iteratorPointer = reinterpret_cast<Byte*>(&(*_iterator));
+                byte = static_cast<Byte>(*(iteratorPointer + _i));
                 ++_i;
-                if (_i >= sizeof(Value)) {
+                if (_i >= sizeof(T)) {
                     ++_iterator;
                     _i = 0;
                 }
@@ -64,7 +68,7 @@ namespace thr::binary::detail {
             void read(Byte& byte) {
                 assert(_iterator != _sentinel && "Iterator has reached last value");
 
-                _readValue<typename std::iterator_traits<Iterator>::value_type>(byte);
+                _read<IteratorValue>(byte);
             }
 
             void read(Byte* bytes, const std::size_t size) {
