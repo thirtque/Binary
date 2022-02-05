@@ -7,44 +7,42 @@
 
 namespace thr::binary::detail {
     template<typename Byte, typename Char, typename CharTraits>
-    class OutputStreamAdapter {
+    class output_stream_adapter {
         public:
-            using OutputStreamType = std::basic_ostream<Char, CharTraits>;
+            using output_stream_type = std::basic_ostream<Char, CharTraits>;
 
-        private:
-            OutputStreamType& _stream;
-
-        public:
-            OutputStreamAdapter(OutputStreamType& stream):
-                _stream(stream) {}
+            output_stream_adapter(output_stream_type& stream):
+                output_stream(stream) {}
 
             void write(const Byte byte) {
-                _stream.write(reinterpret_cast<const Char*>(&byte), 1);
+                output_stream.write(reinterpret_cast<const Char*>(&byte), 1);
             }
 
             void write(const Byte* bytes, const std::size_t size) {
-                _stream.write(reinterpret_cast<const Char*>(bytes), static_cast<std::streamsize>(size));
+                output_stream.write(reinterpret_cast<const Char*>(bytes), static_cast<std::streamsize>(size));
             }
+
+        private:
+            output_stream_type& output_stream;
     };
 
     template<typename Byte, typename Char, typename CharTraits>
-    class InputStreamAdapter {
+    class input_stream_adapter {
         public:
-            using InputStreamType = std::basic_istream<Char, CharTraits>;
+            using input_stream_type = std::basic_istream<Char, CharTraits>;
 
-        private:
-            InputStreamType& _stream;
-
-        public:
-            InputStreamAdapter(InputStreamType& stream):
-                _stream(stream) {}
+            input_stream_adapter(input_stream_type& stream):
+                input_stream(stream) {}
 
             void read(Byte& byte) {
-                _stream.read(reinterpret_cast<Char*>(&byte), 1);
+                input_stream.read(reinterpret_cast<Char*>(&byte), 1);
             }
 
             void read(Byte* p, const std::size_t size) {
-                _stream.read(reinterpret_cast<Char*>(p), static_cast<std::streamsize>(size));
+                input_stream.read(reinterpret_cast<Char*>(p), static_cast<std::streamsize>(size));
             }
+
+        private:
+            input_stream_type& input_stream;
     };
 }; // namespace thr::binary::detail

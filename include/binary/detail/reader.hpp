@@ -14,25 +14,25 @@ namespace thr::binary::detail {
     };
 
     template<typename Byte, input_adapter<Byte> InputAdapter>
-    class BasicReader {
-        private:
-            InputAdapter _adapter;
-
+    class reader {
         public:
-            BasicReader(InputAdapter&& adapter):
-                _adapter(std::forward<InputAdapter>(adapter)) {}
+            reader(InputAdapter&& adapter):
+                input_adapter(std::forward<InputAdapter>(adapter)) {}
 
             template<numeric Number>
             void read(Number& number) {
                 auto bytes = reinterpret_cast<Byte*>(&number);
-                _adapter.read(bytes, sizeof(Number));
+                input_adapter.read(bytes, sizeof(Number));
             }
 
             template<class Char, class CharTraits, class Allocator>
             void read(std::basic_string<Char, CharTraits, Allocator>& string, const std::size_t size) {
                 string.resize(size);
                 auto bytes = reinterpret_cast<Byte*>(string.data());
-                _adapter.read(bytes, size * sizeof(Char));
+                input_adapter.read(bytes, size * sizeof(Char));
             }
+
+        private:
+            InputAdapter input_adapter;
     };
 } // namespace thr::binary::detail

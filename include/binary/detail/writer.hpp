@@ -15,27 +15,27 @@ namespace thr::binary::detail {
     };
 
     template<typename Byte, output_adapter<Byte> OutputAdapter>
-    class BasicWriter {
+    class writer {
         private:
-            OutputAdapter _adapter;
+            OutputAdapter adapter;
 
         public:
-            BasicWriter(OutputAdapter&& adapter):
-                _adapter(std::forward<OutputAdapter>(adapter)) {}
+            writer(OutputAdapter&& adapter):
+                adapter(std::forward<OutputAdapter>(adapter)) {}
 
             template<numeric Number>
             void write(const Number& number) {
                 auto bytes = reinterpret_cast<const Byte*>(&number);
-                _adapter.write(bytes, sizeof(Number));
+                adapter.write(bytes, sizeof(Number));
             }
 
             template<class Char, class CharTraits, class Allocator>
             void write(const std::basic_string<Char, CharTraits, Allocator>& string, const std::size_t size) {
                 auto bytes = reinterpret_cast<const Byte*>(string.data());
-                _adapter.write(bytes, std::min(size, string.size()) * sizeof(Char));
+                adapter.write(bytes, std::min(size, string.size()) * sizeof(Char));
                 // Pad remaining bytes with \0
                 for (auto i = string.size(); i < size; ++i) {
-                    _adapter.write(Byte{0});
+                    adapter.write(Byte{0});
                 }
             }
 

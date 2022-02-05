@@ -16,13 +16,13 @@ struct Entry {
 };
 
 template<typename OutputAdapter>
-void writeHeader(thr::binary::Writer<OutputAdapter>& writer, const Header& header) {
+void writeHeader(thr::binary::writer<OutputAdapter>& writer, const Header& header) {
     writer.write(header.signature);
     writer.write(header.entryCount);
 }
 
 template<typename InputAdapter>
-Header readHeader(thr::binary::Reader<InputAdapter>& reader) {
+Header readHeader(thr::binary::reader<InputAdapter>& reader) {
     Header fileHeader;
     reader.read(fileHeader.signature);
     reader.read(fileHeader.entryCount);
@@ -30,13 +30,13 @@ Header readHeader(thr::binary::Reader<InputAdapter>& reader) {
 }
 
 template<typename OutputAdapter>
-void writeEntry(thr::binary::Writer<OutputAdapter>& writer, const Entry& entry) {
+void writeEntry(thr::binary::writer<OutputAdapter>& writer, const Entry& entry) {
     writer.write(entry.name, 16);
     writer.write(entry.value);
 }
 
 template<typename InputAdapter>
-Entry readEntry(thr::binary::Reader<InputAdapter>& reader) {
+Entry readEntry(thr::binary::reader<InputAdapter>& reader) {
     Entry fileEntry;
     reader.read(fileEntry.name, 16);
     reader.read(fileEntry.value);

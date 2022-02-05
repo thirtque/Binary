@@ -12,57 +12,49 @@
 #include "detail/writer.hpp"
 
 namespace thr::binary {
-    template<detail::input_adapter<std::byte> InputAdapter>
-    using Reader = detail::BasicReader<std::byte, InputAdapter>;
+    template<typename InputAdapter>
+    class reader: public detail::reader<std::byte, InputAdapter> {
+        public:
+            reader(InputAdapter&& adapter):
+                detail::reader<std::byte, InputAdapter>(std::forward<InputAdapter>(adapter)) {}
+    };
 
-    template<detail::output_adapter<std::byte> OutputAdapter>
-    using Writer = detail::BasicWriter<std::byte, OutputAdapter>;
+    template<typename OutputAdapter>
+    class writer: public detail::writer<std::byte, OutputAdapter> {
+        public:
+            writer(OutputAdapter&& adapter):
+                detail::writer<std::byte, OutputAdapter>(std::forward<OutputAdapter>(adapter)) {}
+    };
 
-    template<typename Iterator, typename Sentinel>
-    using InputIteratorAdapter = detail::InputIteratorAdapter<std::byte, Iterator, Sentinel>;
-
-    template<typename Iterator>
-    using OutputIteratorAdapter = detail::OutputIteratorAdapter<std::byte, Iterator>;
-
-    template<typename Char, typename CharTraits>
-    using InputStreamAdapter = detail::InputStreamAdapter<std::byte, Char, CharTraits>;
-
-    template<typename Char, typename CharTraits>
-    using OutputStreamAdapter = detail::OutputStreamAdapter<std::byte, Char, CharTraits>;
-
-    // Iterator
+    // Input adapter factories
     template<std::input_iterator Iterator, std::sentinel_for<Iterator> Sentinel>
-    auto reader(Iterator iterator, Sentinel sentinel) {
-        using Adapter = InputIteratorAdapter<Iterator, Sentinel>;
-
-        return Reader<Adapter>(Adapter(iterator, sentinel));
+    detail::input_iterator_adapter<std::byte, Iterator, Sentinel>
+    input_adapter(Iterator iterator, Sentinel sentinel) {
+        return {iterator, sentinel};
     }
 
-    template<std::output_iterator<std::byte> Iterator>
-    auto writer(Iterator iterator) {
-        using Adapter = OutputIteratorAdapter<Iterator>;
-
-        return Writer<Adapter>(Adapter(iterator));
-    }
-
-    // Range
     template<std::ranges::input_range Range>
-    auto reader(Range& range) {
-        return reader(std::ranges::begin(range), std::ranges::end(range));
-    }
-
-    // Stream
-    template<typename Char, typename CharTraits>
-    auto reader(std::basic_istream<Char, CharTraits>& stream) {
-        using Adapter = InputStreamAdapter<Char, CharTraits>;
-
-        return Reader<Adapter>(Adapter(stream));
+    detail::input_iterator_adapter<std::byte, std::ranges::iterator_t<Range>, std::ranges::sentinel_t<Range>>
+    input_adapter(Range& range) {
+        return {std::ranges::begin(range), std::ranges::end(range)};
     }
 
     template<typename Char, typename CharTraits>
-    auto writer(std::basic_ostream<Char, CharTraits>& stream) {
-        using Adapter = OutputStreamAdapter<Char, CharTraits>;
+    detail::input_stream_adapter<std::byte, Char, CharTraits>
+    input_adapter(std::basic_istream<Char, CharTraits>& stream) {
+        return {stream};
+    }
 
-        return Writer<Adapter>(Adapter(stream));
+    // Output adapter factories
+    template<std::output_iterator<std::byte> Iterator>
+    detail::output_iterator_adapter<std::byte, Iterator>
+    output_adapter(Iterator iterator) {
+        return {iterator};
+    }
+
+    template<typename Char, typename CharTraits>
+    detail::output_stream_adapter<std::byte, Char, CharTraits>
+    output_adapter(std::basic_ostream<Char, CharTraits>& stream) {
+        return {stream};
     }
 } // namespace thr::binary

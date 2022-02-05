@@ -10,12 +10,9 @@ namespace thr::binary::detail {
     concept single_byte = sizeof(T) == 1;
 
     template<typename Byte, std::output_iterator<Byte> Iterator>
-    class OutputIteratorAdapter {
-        private:
-            Iterator _iterator;
-
+    class output_iterator_adapter {
         public:
-            OutputIteratorAdapter(Iterator iterator):
+            output_iterator_adapter(Iterator iterator):
                 _iterator(iterator) {}
 
             void write(const Byte byte) {
@@ -28,53 +25,53 @@ namespace thr::binary::detail {
                     write(byte);
                 });
             }
-    };
-
-    template<typename Byte, std::input_iterator Iterator, std::sentinel_for<Iterator> Sentinel>
-    class InputIteratorAdapter {
-        private:
-            using IteratorValue = typename std::iter_value_t<Iterator>;
 
         private:
             Iterator _iterator;
-            Sentinel _sentinel;
+    };
 
-            std::size_t _i = 0;
-
-        private:
-            template<single_byte T>
-            void _read(Byte& byte) {
-                byte = static_cast<Byte>(*_iterator);
-                ++_iterator;
-            }
-
-            template<typename T>
-            requires(!single_byte<T>)
-            void _read(Byte& byte) {
-                auto iteratorPointer = reinterpret_cast<Byte*>(&(*_iterator));
-                byte = static_cast<Byte>(*(iteratorPointer + _i));
-                ++_i;
-                if (_i >= sizeof(T)) {
-                    ++_iterator;
-                    _i = 0;
-                }
-            }
-
+    template<typename Byte, std::input_iterator Iterator, std::sentinel_for<Iterator> Sentinel>
+    class input_iterator_adapter {
         public:
-            InputIteratorAdapter(Iterator iterator, Sentinel sentinel):
-                _iterator(iterator),
-                _sentinel(sentinel) {}
+            using iterator_value_type = typename std::iter_value_t<Iterator>;
+
+            input_iterator_adapter(Iterator iterator, Sentinel sentinel):
+                iterator(iterator),
+                sentinel(sentinel) {}
 
             void read(Byte& byte) {
-                assert(_iterator != _sentinel && "Iterator has reached last value");
+                assert(iterator != sentinel && "Iterator has reached last value");
 
-                _read<IteratorValue>(byte);
+                read_impl<iterator_value_type>(byte);
             }
 
             void read(Byte* bytes, const std::size_t size) {
                 std::for_each_n(bytes, size, [&](Byte& byte) {
                     read(byte);
                 });
+            }
+
+        private:
+            Iterator iterator;
+            Sentinel sentinel;
+
+            std::size_t value_iterator = 0;
+
+            template<single_byte T>
+            void read_impl(Byte& byte) {
+                byte = static_cast<Byte>(*iterator);
+                ++iterator;
+            }
+
+            template<typename T>
+            requires(!single_byte<T>) void read_impl(Byte& byte) {
+                auto iteratorPointer = reinterpret_cast<Byte*>(&(*iterator));
+                byte = static_cast<Byte>(*(iteratorPointer + value_iterator));
+                ++value_iterator;
+                if (value_iterator >= sizeof(T)) {
+                    ++iterator;
+                    value_iterator = 0;
+                }
             }
     };
 }; // namespace thr::binary::detail

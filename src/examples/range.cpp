@@ -6,7 +6,7 @@
 #include "examples/common.hpp"
 
 void write(std::vector<std::byte>& outputBuffer) {
-    auto writer = thr::binary::writer(std::back_inserter(outputBuffer));
+    auto writer = thr::binary::writer{thr::binary::output_adapter(std::back_inserter(outputBuffer))};
 
     writeHeader(writer,
         {
@@ -20,7 +20,7 @@ void write(std::vector<std::byte>& outputBuffer) {
 }
 
 void read(std::vector<std::byte>& inputBuffer) {
-    auto reader = thr::binary::reader(inputBuffer);
+    auto reader = thr::binary::reader{thr::binary::input_adapter(inputBuffer)};
 
     auto header = readHeader(reader);
     std::cout << "header.signature = 0x" << std::hex << header.signature << std::dec << std::endl;
