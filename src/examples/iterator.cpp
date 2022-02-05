@@ -8,7 +8,7 @@
 void write(std::vector<std::byte>& outputBuffer) {
     auto outputIterator = std::back_inserter(outputBuffer);
 
-    auto writer = thr::binary::writer{thr::binary::output_adapter(outputIterator)};
+    auto writer = thr::binary::make_writer(outputIterator);
 
     writeHeader(writer,
         {
@@ -25,7 +25,7 @@ void read(std::vector<std::uint32_t>& inputBuffer) {
     auto inputIterator = inputBuffer.begin();
     auto inputSentinel = inputBuffer.end();
 
-    auto reader = thr::binary::reader{thr::binary::input_adapter(inputIterator, inputSentinel)};
+    auto reader = thr::binary::make_reader(inputIterator, inputSentinel);
 
     auto header = readHeader(reader);
     std::cout << "header.signature = 0x" << std::hex << header.signature << std::dec << std::endl;

@@ -13,11 +13,11 @@ namespace thr::binary::detail {
     class output_iterator_adapter {
         public:
             output_iterator_adapter(Iterator iterator):
-                _iterator(iterator) {}
+                iterator(iterator) {}
 
             void write(const Byte byte) {
-                *_iterator = byte;
-                ++_iterator;
+                *iterator = byte;
+                ++iterator;
             }
 
             void write(const Byte* bytes, const std::size_t size) {
@@ -27,7 +27,7 @@ namespace thr::binary::detail {
             }
 
         private:
-            Iterator _iterator;
+            Iterator iterator;
     };
 
     template<typename Byte, std::input_iterator Iterator, std::sentinel_for<Iterator> Sentinel>

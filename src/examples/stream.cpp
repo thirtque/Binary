@@ -10,7 +10,7 @@ constexpr auto fileName = "binary_file.bin";
 void write() {
     std::ofstream outputStream(fileName, std::ofstream::in | std::ofstream::binary | std::ofstream::trunc);
 
-    auto writer = thr::binary::writer{thr::binary::output_adapter(outputStream)};
+    auto writer = thr::binary::make_writer(outputStream);
 
     writeHeader(writer,
         {
@@ -28,7 +28,7 @@ void write() {
 void read() {
     std::ifstream inputStream(fileName, std::ifstream::in | std::ifstream::binary);
 
-    auto reader = thr::binary::reader{thr::binary::input_adapter(inputStream)};
+    auto reader = thr::binary::make_reader(inputStream);
 
     auto header = readHeader(reader);
     std::cout << "header.signature = 0x" << std::hex << header.signature << std::dec << std::endl;

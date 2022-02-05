@@ -12,18 +12,18 @@ namespace thr::binary::detail {
             using output_stream_type = std::basic_ostream<Char, CharTraits>;
 
             output_stream_adapter(output_stream_type& stream):
-                output_stream(stream) {}
+                stream(stream) {}
 
             void write(const Byte byte) {
-                output_stream.write(reinterpret_cast<const Char*>(&byte), 1);
+                stream.write(reinterpret_cast<const Char*>(&byte), 1);
             }
 
             void write(const Byte* bytes, const std::size_t size) {
-                output_stream.write(reinterpret_cast<const Char*>(bytes), static_cast<std::streamsize>(size));
+                stream.write(reinterpret_cast<const Char*>(bytes), static_cast<std::streamsize>(size));
             }
 
         private:
-            output_stream_type& output_stream;
+            output_stream_type& stream;
     };
 
     template<typename Byte, typename Char, typename CharTraits>
@@ -32,17 +32,17 @@ namespace thr::binary::detail {
             using input_stream_type = std::basic_istream<Char, CharTraits>;
 
             input_stream_adapter(input_stream_type& stream):
-                input_stream(stream) {}
+                stream(stream) {}
 
             void read(Byte& byte) {
-                input_stream.read(reinterpret_cast<Char*>(&byte), 1);
+                stream.read(reinterpret_cast<Char*>(&byte), 1);
             }
 
             void read(Byte* p, const std::size_t size) {
-                input_stream.read(reinterpret_cast<Char*>(p), static_cast<std::streamsize>(size));
+                stream.read(reinterpret_cast<Char*>(p), static_cast<std::streamsize>(size));
             }
 
         private:
-            input_stream_type& input_stream;
+            input_stream_type& stream;
     };
 }; // namespace thr::binary::detail

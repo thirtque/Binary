@@ -17,22 +17,22 @@ namespace thr::binary::detail {
     class reader {
         public:
             reader(InputAdapter&& adapter):
-                input_adapter(std::forward<InputAdapter>(adapter)) {}
+                adapter(std::forward<InputAdapter>(adapter)) {}
 
             template<numeric Number>
             void read(Number& number) {
                 auto bytes = reinterpret_cast<Byte*>(&number);
-                input_adapter.read(bytes, sizeof(Number));
+                adapter.read(bytes, sizeof(Number));
             }
 
             template<class Char, class CharTraits, class Allocator>
             void read(std::basic_string<Char, CharTraits, Allocator>& string, const std::size_t size) {
                 string.resize(size);
                 auto bytes = reinterpret_cast<Byte*>(string.data());
-                input_adapter.read(bytes, size * sizeof(Char));
+                adapter.read(bytes, size * sizeof(Char));
             }
 
         private:
-            InputAdapter input_adapter;
+            InputAdapter adapter;
     };
 } // namespace thr::binary::detail
